@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/otpinput.tsx","./src/components/qrscanner.tsx","./src/components/verificationflow.tsx","./src/components/verificationresult.tsx","./src/hooks/useotpverification.ts","./src/hooks/useqrscan.ts","./src/types/index.ts","./src/utils/tinvalidation.ts"],"version":"5.9.3"}
