@@ -12,7 +12,7 @@ export default function QRScanner({ onScan, disabled }: QRScannerProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-                       
+
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
