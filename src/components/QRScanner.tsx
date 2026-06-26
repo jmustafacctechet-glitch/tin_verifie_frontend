@@ -14,6 +14,12 @@ export default function QRScanner({ onScan, disabled }: QRScannerProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  useEffect(() => {
     return () => {
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
@@ -27,10 +33,6 @@ export default function QRScanner({ onScan, disabled }: QRScannerProps) {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
       });
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
 
       setStream(mediaStream);
       setCameraActive(true);
@@ -169,7 +171,7 @@ export default function QRScanner({ onScan, disabled }: QRScannerProps) {
           autoPlay
           playsInline
           muted
-          className="w-full max-w-md rounded-lg border border-gray-300"
+          className="w-full max-w-md rounded-lg border border-gray-300 object-cover"
         />
       )}
 
