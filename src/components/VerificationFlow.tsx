@@ -115,12 +115,6 @@ export default function VerificationFlow() {
               <span className="bg-white px-2 text-gray-500">or</span>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Paste QR URL manually
-            </label>
-            <ManualUrlInput onSubmit={handleScan} />
-          </div>
         </div>
       )}
 
@@ -200,32 +194,3 @@ export default function VerificationFlow() {
   );
 }
 
-function ManualUrlInput({ onSubmit }: { onSubmit: (url: string) => void }) {
-  const [value, setValue] = useState('');
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (value.trim()) {
-      onSubmit(value.trim());
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="https://etrade.gov.et/business-license-checker?..."
-        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
-      />
-      <button
-        type="submit"
-        disabled={!value.trim()}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
-      >
-        Verify
-      </button>
-    </form>
-  );
-}
