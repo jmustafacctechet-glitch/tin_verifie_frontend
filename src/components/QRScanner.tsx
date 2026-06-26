@@ -57,26 +57,45 @@ export default function QRScanner({ onScan, disabled }: QRScannerProps) {
       setError(null);
 
       try {
-        const imageBitmap = await createImageBitmap(file);
+        const img = await new Promise<HTMLImageElement>(
+          (resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const image = new Image();
+            image.onload = () => {
+              URL.revokeObjectURL(url);
+              resolve(image);
+            };
+            image.onerror = () => {
+              URL.revokeObjectURL(url);
+              reject(new Error('Failed to load image'));
+            };
+            image.src = url;
+          },
+        );
+
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        const MAX = 1024;
+        if (w > MAX || h > MAX) {
+          const scale = Math.min(MAX / w, MAX / h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+
         const canvas = canvasRef.current;
         if (!canvas) return;
-
-        canvas.width = imageBitmap.width;
-        canvas.height = imageBitmap.height;
+        canvas.width = w;
+        canvas.height = h;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        ctx.drawImage(imageBitmap, 0, 0);
-        imageBitmap.close();
+        ctx.drawImage(img, 0, 0, w, h);
 
         const { default: jsQR } = await import('jsqr');
-        const imageData = ctx.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height,
-        );
+        const imageData = ctx.getImageData(0, 0, w, h);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        e.target.value = '';
 
         if (code?.data) {
           onScan(code.data);
