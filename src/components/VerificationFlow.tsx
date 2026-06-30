@@ -1,22 +1,18 @@
 import { useState, useCallback } from 'react';
 import QRScanner from './QRScanner';
 import VerificationResult from './VerificationResult';
-import OtpInput from './OtpInput';
 import { useQRScan } from '../hooks/useQRScan';
-import { useOTPVerification } from '../hooks/useOTPVerification';
-import type { VerificationStep, QrScanResponse } from '../types';
+import type { QrScanResponse } from '../types';
 
-type FlowStatus = 'idle' | 'scanning' | 'verifying' | 'otp' | 'complete' | 'error';
+type FlowStatus = 'idle' | 'scanning' | 'complete' | 'error';
 
 export default function VerificationFlow() {
   const [flowStatus, setFlowStatus] = useState<FlowStatus>('idle');
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [scanResponse, setScanResponse] = useState<QrScanResponse | null>(null);
   const [businessName, setBusinessName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const scanMutation = useQRScan();
-  const otpMutation = useOTPVerification();
 
   const handleScan = useCallback(
     async (qrData: string) => {
@@ -26,7 +22,6 @@ export default function VerificationFlow() {
       try {
         const result = await scanMutation.mutateAsync(qrData);
         setScanResponse(result);
-        setSessionId(result.sessionId);
 
         if (result.status === 'FAILED') {
           setFlowStatus('error');
@@ -34,17 +29,9 @@ export default function VerificationFlow() {
           return;
         }
 
-        if (
-          result.status === 'GOVERNMENT_VALIDATED' ||
-          result.status === 'VERIFIED' ||
-          result.status === 'OTP_PENDING'
-        ) {
-          setBusinessName(result.extractedData?.licenseNo || null);
-        }
+        setBusinessName(result.extractedData?.licenseNo || null);
 
-        if (result.status === 'OTP_PENDING') {
-          setFlowStatus('otp');
-        } else if (result.status === 'VERIFIED') {
+        if (result.status === 'VERIFIED') {
           setFlowStatus('complete');
         } else {
           setFlowStatus('error');
@@ -59,37 +46,8 @@ export default function VerificationFlow() {
     [scanMutation],
   );
 
-  const handleOtpComplete = useCallback(
-    async (otp: string) => {
-      if (!sessionId) return;
-
-      setFlowStatus('verifying');
-
-      try {
-        const result = await otpMutation.mutateAsync({
-          sessionId,
-          otp,
-        });
-
-        if (result.verified) {
-          setFlowStatus('complete');
-        } else {
-          setError(
-            result.failureReason || 'OTP verification failed',
-          );
-        }
-      } catch (err: any) {
-        setError(
-          err.message || 'OTP verification failed',
-        );
-      }
-    },
-    [sessionId, otpMutation],
-  );
-
   const handleReset = useCallback(() => {
     setFlowStatus('idle');
-    setSessionId(null);
     setScanResponse(null);
     setBusinessName(null);
     setError(null);
@@ -136,34 +94,6 @@ export default function VerificationFlow() {
       {flowStatus === 'error' && error && !scanResponse && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <p className="text-red-700">{error}</p>
-        </div>
-      )}
-
-      {flowStatus === 'otp' && (
-        <div className="space-y-6">
-          {scanResponse && (
-            <VerificationResult
-              scanResponse={scanResponse}
-              businessName={businessName}
-            />
-          )}
-
-          <div className="border-t pt-6">
-            <h3 className="font-semibold text-center mb-4">
-              Enter OTP sent to your phone
-            </h3>
-            <OtpInput
-              length={6}
-              onComplete={handleOtpComplete}
-              disabled={otpMutation.isPending}
-              error={error}
-            />
-            {otpMutation.isPending && (
-              <p className="text-center text-gray-500 text-sm mt-2">
-                Verifying OTP...
-              </p>
-            )}
-          </div>
         </div>
       )}
 

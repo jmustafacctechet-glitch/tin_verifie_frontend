@@ -10,7 +10,6 @@ export default function VerificationResult({
   businessName,
 }: VerificationResultProps) {
   const isVerified = scanResponse.status === 'VERIFIED';
-  const isOtpPending = scanResponse.status === 'OTP_PENDING';
   const isFailed = scanResponse.status === 'FAILED';
 
   return (
@@ -24,21 +23,6 @@ export default function VerificationResult({
           {businessName && (
             <p className="text-green-700 mt-2">{businessName}</p>
           )}
-        </div>
-      )}
-
-      {isOtpPending && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-          <div className="text-4xl mb-2">&#9432;</div>
-          <h3 className="text-xl font-bold text-blue-800">
-            Government Verified
-          </h3>
-          {businessName && (
-            <p className="text-blue-700 mt-2">{businessName}</p>
-          )}
-          <p className="text-blue-600 mt-2 text-sm">
-            An OTP has been sent to the registered phone number
-          </p>
         </div>
       )}
 
