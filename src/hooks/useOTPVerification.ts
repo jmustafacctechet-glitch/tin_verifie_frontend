@@ -2,6 +2,8 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import type { OtpVerifyResponse } from '../types';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 async function verifyOtp(
   sessionId: string,
   otp: string,
@@ -9,7 +11,7 @@ async function verifyOtp(
   const response = await axios.post<{
     status: string;
     data: OtpVerifyResponse;
-  }>('/api/qr-verification/verify-otp', { sessionId, otp });
+  }>(`${API_URL}/api/qr-verification/verify-otp`, { sessionId, otp });
 
   if (response.data.status !== 'success') {
     const failureReason =
